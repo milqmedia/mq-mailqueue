@@ -2,20 +2,22 @@
 
 namespace MQMailQueue\Service;
 
-use Application\Service\AbstractService;
-
-class Adapter extends AbstractService
+class Adapter
 {
-	private $SENDER_NAME = array(3 => 'skions.com', 2 => 'wintersporters.nl', 5 => 'wintersporters.be');
-	private $SENDER_EMAIL = array(3 => 'info@skions.com', 2 => 'redactie@wintersporters.nl', 5 => 'redactie@wintersporters.nl');
-		
-	private $devEmails = array('martijn@milq.nl', 'martijn.milq@gmail.com', 'johankuijt@gmail.com');
+	private $serviceManager;
 	
-	public function __construct() {
+	private $config;
+	
+	public function __construct($serviceManager) {
 		
-		$config = $this->getServiceLocator()->get('application')->getConfig();
+		$this->setServiceManager($serviceManager);
 		
-		var_dump($config);	
+		$config = $serviceManager->get('application')->getConfig();
+		
+		if(!isset($config['mailqueue']))
+			throw new \Exception('No mailqueue config found.');
+			
+		$this->config = $config['mailqueue'];
 	}
 	
 	public function queueNewMessage($name, $email, $text, $html, $title, $prio = 1) {
@@ -24,8 +26,8 @@ class Adapter extends AbstractService
 					  'send' 			=> 0,
 					  'recipientName' 	=> $name,
 					  'recipientEmail' 	=> $email,
-					  'senderName'		=> $this->SENDER_NAME[LANGUAGE_ID],
-					  'senderEmail'		=> $this->SENDER_EMAIL[LANGUAGE_ID],
+					  'senderName'		=> $this->config['senderName'],
+					  'senderEmail'		=> $this->config['senderEmail'],
 					  'createDate'		=> date('Y-m-d H:i:s'),
 					  'subject'			=> $title,
 					  'bodyHTML'		=> $html,
@@ -37,13 +39,14 @@ class Adapter extends AbstractService
 	
 	public function sendEmailsFromQueue() {
 		
-		$transport = $this->getServiceLocator()->get('SlmMail\Mail\Transport\SesTransport');
-		$queue = $this->fetchAll('SELECT * FROM queue WHERE send = 0 ORDER BY prio, createDate DESC LIMIT 250');
+		$transport = $serviceManager->get('SlmMail\Mail\Transport\SesTransport');
+		
+		$limit = $this->config['numberOfEmailsPerRun'];
+		
+		$stmt = $this->execute('SELECT * FROM queue WHERE send = 0 ORDER BY prio, createDate DESC LIMIT ' . $limit);
+		$queue = $stmt->fetchAll();
 		
 		foreach($queue as $mail) {
-			
-			if(ENVIRONMENT !== 'production' && !in_array($mail['recipientEmail'], $this->devEmails))
-				continue;
 				
 			$message = new \Zend\Mail\Message();			
 			
@@ -78,18 +81,39 @@ class Adapter extends AbstractService
 				
 				$this->getConnection()->update('queue', array('send' => 2, 'error' => $e->getMessage()), array('qId' => $mail['qId']));
 				
-				$this->queueNewMessage('Johan', 'johankuijt+kappemailerror@gmail.com', $e->getMessage(), $e->getMessage(), 'Kappe Mail Error', 9);
-			}
-			
-			
+				$this->queueNewMessage('MailAdmin', $this->config['adminEmail'], $e->getMessage(), $e->getMessage(), 'MailQueue Error', 9);
+			}		
 		}				
 	}
 	
 	private function getConnection() {
 	    
-	     $em = $this->getServiceLocator()->get('doctrine.entitymanager.' . $this->getDbConnectionId());
+	     $connectionId = $this->config['database']['connectionId'];
+	     
+	     $em = $this->getServiceManager()->get($connectionId);
 	     $connection = $em->getConnection();
 	     
 	     return $connection;
     }
+    
+    private function execute($sql, $params = array()) {
+	    
+	    $connection = $this->getConnection();
+	    
+	    $stmt = $connection->prepare($sql);
+		$stmt->execute($params);
+		
+		return $stmt;
+    }
+ 
+    public function setServiceManager(\Zend\ServiceManager\ServiceManager $serviceManager)  
+    {  
+        $this->serviceManager = $serviceManager;  
+        return $this;  
+    }  
+  
+    public function getServiceManager()  
+    {  
+        return $this->serviceManager;  
+    } 
 }

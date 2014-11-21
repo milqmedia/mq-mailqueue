@@ -1,0 +1,18 @@
+<?php
+	
+return array(
+    'aws' => array(
+         'key'    => '',
+         'secret' => '',
+         'region' => 'us-east-1'
+    ),
+    'mailqueue' => array(
+	    'adminEmail' => '',
+	 	'senderName' => '',
+	 	'senderEmail' => '', 
+	 	'numberOfEmailsPerRun' => 250,  
+	 	'database' => array(
+		 	'connectionId' => 'doctrine.entitymanager.orm_mailqueue',	
+	 	),
+    ),
+);
