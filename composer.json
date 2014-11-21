@@ -1,0 +1,28 @@
+{
+    "name": "milqmedia/mq-mailqueue",
+    "type": "library",
+    "description": "Milq Media MailQueue",
+    "keywords": [
+        "zf2",
+        "mail",
+        "queue",
+        "milq media"
+    ],
+    "homepage": "https://github.com/milqmedia/mq-mailqueue",
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": "2.*",
+        "slm/mail": "~1.4",
+        "aws/aws-sdk-php-zf2": "1.2.*",
+        "doctrine/doctrine-orm-module": "0.*",
+        "doctrine/common" : ">=2.1"
+    },
+    "autoload": {
+	    "psr-0": {
+	        "MailQueue": "src/"
+        },
+        "classmap": [
+            "./"
+        ]
+    }
+}
