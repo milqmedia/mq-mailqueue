@@ -1,0 +1,24 @@
+<?php
+/**
+ * MQMailQueue
+ * Copyright (c) 2014 Milq Media.
+ *
+ * @author      Johan Kuijt <johan@milq.nl>
+ * @copyright   2014 Milq Media.
+ * @license     http://www.opensource.org/licenses/mit-license.php  MIT License
+ * @link        http://milq.nl
+ */
+ 
+return array(
+    'modules' => array(
+	    'DoctrineModule',
+	    'DoctrineORMModule',
+        'MQMailQueue',
+    ),
+    'module_listener_options' => array(
+        'config_glob_paths' => array(
+            __DIR__ . '/testing.config.php',
+        ),
+        'module_paths' => array(),
+    ),
+);

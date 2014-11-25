@@ -1,64 +1,86 @@
 <?php
-
+/**
+ * MQMailQueue
+ * Copyright (c) 2014 Milq Media.
+ *
+ * @author      Johan Kuijt <johan@milq.nl>
+ * @copyright   2014 Milq Media.
+ * @license     http://www.opensource.org/licenses/mit-license.php  MIT License
+ * @link        http://milq.nl
+ */
+ 
 namespace MQMailQueue\Service;
+
+use \MQMailQueue\Exception\RuntimeException;
 
 class Adapter
 {
 	private $serviceManager;
-	
+	private $entityManager;
 	private $config;
 	
-	public function __construct($serviceManager) {
+	public function __construct(\Zend\ServiceManager\ServiceManager $serviceManager, \Doctrine\ORM\EntityManager $entityManager) {
 		
-		$this->setServiceManager($serviceManager);
+		$this->serviceManager = $serviceManager;
+		$this->entityManager = $entityManager;
 		
-		$config = $serviceManager->get('application')->getConfig();
+		$config = $this->serviceManager->get('application')->getConfig();
 		
 		if(!isset($config['mailqueue']))
-			throw new \Exception('No mailqueue config found.');
+			throw new RuntimeException('No mailqueue config found.');
 			
 		$this->config = $config['mailqueue'];
 	}
 	
 	public function queueNewMessage($name, $email, $text, $html, $title, $prio = 1) {
+	
+		if(!isset($this->config['database']['entity']))
+			throw new RuntimeException('No queue entity defined in the configuration.');
 		
-		$data = array('prio' 			=> $prio,
-					  'send' 			=> 0,
-					  'recipientName' 	=> $name,
-					  'recipientEmail' 	=> $email,
-					  'senderName'		=> $this->config['senderName'],
-					  'senderEmail'		=> $this->config['senderEmail'],
-					  'createDate'		=> date('Y-m-d H:i:s'),
-					  'subject'			=> $title,
-					  'bodyHTML'		=> $html,
-					  'bodyText'		=> $text,
-					 );
-					  
-		$this->getConnection()->insert('queue', $data);
+		$entityName = $this->config['database']['entity'];	
+		$entity = new $entityName($this->entityManager);    	
+	    
+	    $entity->setPrio(intval($prio));
+	    $entity->setSend(0);
+	    $entity->setRecipientName((string) $name);
+	    $entity->setRecipientEmail((string) $email);
+	    $entity->setSenderName((string) $this->config['senderName']);
+	    $entity->setSenderEmail((string) $this->config['senderEmail']);
+	    $entity->setSubject((string) $title);
+	    $entity->setBodyHTML((string) $html);
+	    $entity->setBodyText((string) $text);
+	    
+	    $entity->setCreateDate(new \DateTime());
+    	  
+    	$this->entityManager->persist($entity);    	
+   		$this->entityManager->flush();
+
+    	return $entity;
 	}
 	
 	public function sendEmailsFromQueue() {
 		
-		$transport = $serviceManager->get('SlmMail\Mail\Transport\SesTransport');
-		
-		$limit = $this->config['numberOfEmailsPerRun'];
-		
-		$stmt = $this->execute('SELECT * FROM queue WHERE send = 0 ORDER BY prio, createDate DESC LIMIT ' . $limit);
-		$queue = $stmt->fetchAll();
-		
+		$transport = $this->serviceManager->get('SlmMail\Mail\Transport\SesTransport');
+
+	    $dql = 'SELECT m FROM ' . $this->config['database']['entity'] . ' m WHERE m.send = 0 ORDER BY m.prio, m.createDate DESC';
+
+	    $query = $this->entityManager->createQuery($dql)
+					        		->setMaxResults($this->config['numberOfEmailsPerRun']);
+	    $queue = $query->getResult();
+	    
 		foreach($queue as $mail) {
-				
+
 			$message = new \Zend\Mail\Message();			
 			
-			$message->addFrom($mail['senderEmail'], $mail['senderName'])
-	        		->addTo($mail['recipientEmail'], $mail['recipientName'])
-					->setSubject($mail['subject']);
+			$message->addFrom($mail->getSenderEmail(), $mail->getSenderName())
+	        		->addTo($mail->getRecipientEmail(), $mail->getRecipientName())
+					->setSubject($mail->getSubject());
 					
-			if($mail['bodyHTML'] !== '') {
+			if(trim($mail->getBodyHTML()) !== '') {
 				
 				$bodyPart = new \Zend\Mime\Message();
 
-				$bodyMessage = new \Zend\Mime\Part($mail['bodyHTML']);
+				$bodyMessage = new \Zend\Mime\Part($mail->getBodyHTML());
 				$bodyMessage->type = 'text/html';
 
 				$bodyPart->setParts(array($bodyMessage));
@@ -68,52 +90,21 @@ class Adapter
 			
 			} else {
 				
-				$message->setBody($mail['bodyText']);	
+				$message->setBody($mail->getBodyText());	
 			}
 			
 			try {
 			
 				$transport->send($message);
 				
-				$this->getConnection()->update('queue', array('send' => 1, 'sendDate' => date('Y-m-d H:i:s')), array('qId' => $mail['qId']));
+				$this->entityManager->getConnection()->update('mailQueue', array('send' => 1, 'sendDate' => date('Y-m-d H:i:s')), array('id' => $mail->getId()));
 					
 			} catch(\Exception $e) {
 				
-				$this->getConnection()->update('queue', array('send' => 2, 'error' => $e->getMessage()), array('qId' => $mail['qId']));
+				$this->entityManager->getConnection()->update('mailQueue', array('send' => 2, 'error' => $e->getMessage()), array('id' => $mail->getId()));
 				
 				$this->queueNewMessage('MailAdmin', $this->config['adminEmail'], $e->getMessage(), $e->getMessage(), 'MailQueue Error', 9);
 			}		
 		}				
 	}
-	
-	private function getConnection() {
-	    
-	     $connectionId = $this->config['database']['connectionId'];
-	     
-	     $em = $this->getServiceManager()->get($connectionId);
-	     $connection = $em->getConnection();
-	     
-	     return $connection;
-    }
-    
-    private function execute($sql, $params = array()) {
-	    
-	    $connection = $this->getConnection();
-	    
-	    $stmt = $connection->prepare($sql);
-		$stmt->execute($params);
-		
-		return $stmt;
-    }
- 
-    public function setServiceManager(\Zend\ServiceManager\ServiceManager $serviceManager)  
-    {  
-        $this->serviceManager = $serviceManager;  
-        return $this;  
-    }  
-  
-    public function getServiceManager()  
-    {  
-        return $this->serviceManager;  
-    } 
 }
