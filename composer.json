@@ -10,7 +10,7 @@
     ],
     "homepage": "https://github.com/milqmedia/mq-mailqueue",
     "require": {
-        "php": ">=5.3.3",
+        "php": ">=5.5",
         "zendframework/zendframework": "2.*",
         "slm/mail": "~1.4",
         "aws/aws-sdk-php-zf2": "1.2.*",
