@@ -10,3 +10,10 @@ before_script:
   - mysql -e 'create database testdb;'
 
 script: phpunit --configuration tests/phpunit.xml
+
+notifications:
+  email:
+    recipients:
+      - johan@milq.nl
+    on_success: never
+    on_failure: always
