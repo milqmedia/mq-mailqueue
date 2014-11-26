@@ -9,32 +9,53 @@
  * @link        http://milq.nl
  */
 
+namespace MQMailQueueTest;
+
 return array(
-    
-    'service_manager' => array(
-        'factories' => array(              
-            'MailQueue' => function($serviceManager) {
-	         	return new \MQMailQueue\Service\Adapter($serviceManager, $serviceManager->get('\Doctrine\ORM\EntityManager'));
-	        }, 
-		),
-	),
+
     'mailqueue' => array(
-	    'adminEmail' => '',
-	 	'senderName' => '',
-	 	'senderEmail' => '', 
+	    'adminEmail' => 'johan@milq.nl',
+	 	'senderName' => 'Johan',
+	 	'senderEmail' => 'johan@milq.nl', 
 	 	'numberOfEmailsPerRun' => 250,  
 	 	'database' => array(
-		 	'entity' => 'Application\Entity\MailQueue',
+		 	'entity' => 'MQMailQueueTest\Entity\MailQueue',
 	 	),
     ),
-
     'aws' => array(
-        'services' => array(
-            'ses' => array(
-                'params' => array(
-                    'region' => 'us-east-1'
-                )
-            )
-        )
+         'key'    				=> '',
+         'secret' 				=> '',
+         'region' 				=> 'us-east-1'
     ),
+    'doctrine' => array(
+	    'connection' => array(
+			'orm_default' => array(
+				'driverClass' =>'Doctrine\DBAL\Driver\PDOMySql\Driver',
+				'params' => array(
+					'host'     => 'localhost',
+					'port'     => '3306',
+					'user'     => 'test',
+					'password' => '',
+					'dbname'   => 'testdb',
+					'charset' => 'utf8',
+					'driverOptions' => array(
+                        1002=>'SET NAMES utf8'
+					)
+				),				
+			),
+		),
+		'driver' => array(
+			__NAMESPACE__ . '_entities' => array(
+				'class' =>'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+				'cache' => 'array',
+				'paths' => array(__DIR__ . '/' . __NAMESPACE__ . '/Entity')
+			),
+			'orm_default' => array(
+				'class'   => 'Doctrine\ORM\Mapping\Driver\DriverChain',
+				'drivers' => array(
+					__NAMESPACE__ . '\Entity' => __NAMESPACE__ . '_entities',
+				)
+			),
+		),
+	)
 );

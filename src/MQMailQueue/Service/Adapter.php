@@ -12,6 +12,7 @@
 namespace MQMailQueue\Service;
 
 use \MQMailQueue\Exception\RuntimeException;
+use Zend\Validator\EmailAddress;
 
 class Adapter
 {
@@ -37,6 +38,14 @@ class Adapter
 		if(!isset($this->config['database']['entity']))
 			throw new RuntimeException('No queue entity defined in the configuration.');
 		
+		$validator = new EmailAddress();
+
+		if (!$validator->isValid($email)) 
+			throw new RuntimeException('Invalid recipient emailaddress');
+			
+		if (!$validator->isValid($this->config['senderEmail'])) 
+			throw new RuntimeException('Invalid sender emailaddress');
+			
 		$entityName = $this->config['database']['entity'];	
 		$entity = new $entityName($this->entityManager);    	
 	    
@@ -61,9 +70,10 @@ class Adapter
 	public function sendEmailsFromQueue() {
 		
 		$transport = $this->serviceManager->get('SlmMail\Mail\Transport\SesTransport');
-
+		$entity = new $this->config['database']['entity'];
+		$tableName = $this->entityManager->getClassMetadata(get_class($entity))->getTableName();		
+		
 	    $dql = 'SELECT m FROM ' . $this->config['database']['entity'] . ' m WHERE m.send = 0 ORDER BY m.prio, m.createDate DESC';
-
 	    $query = $this->entityManager->createQuery($dql)
 					        		->setMaxResults($this->config['numberOfEmailsPerRun']);
 	    $queue = $query->getResult();
@@ -97,11 +107,11 @@ class Adapter
 			
 				$transport->send($message);
 				
-				$this->entityManager->getConnection()->update('mailQueue', array('send' => 1, 'sendDate' => date('Y-m-d H:i:s')), array('id' => $mail->getId()));
+				$this->entityManager->getConnection()->update($tableName, array('send' => 1, 'sendDate' => date('Y-m-d H:i:s')), array('id' => $mail->getId()));
 					
 			} catch(\Exception $e) {
 				
-				$this->entityManager->getConnection()->update('mailQueue', array('send' => 2, 'error' => $e->getMessage()), array('id' => $mail->getId()));
+				$this->entityManager->getConnection()->update($tableName, array('send' => 2, 'error' => $e->getMessage()), array('id' => $mail->getId()));
 				
 				$this->queueNewMessage('MailAdmin', $this->config['adminEmail'], $e->getMessage(), $e->getMessage(), 'MailQueue Error', 9);
 			}		

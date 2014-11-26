@@ -13,6 +13,8 @@ return array(
     'modules' => array(
 	    'DoctrineModule',
 	    'DoctrineORMModule',
+	    'Aws',
+        'SlmMail',
         'MQMailQueue',
     ),
     'module_listener_options' => array(
