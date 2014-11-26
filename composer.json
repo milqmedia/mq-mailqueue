@@ -12,6 +12,7 @@
     "require": {
         "php": ">=5.5",
         "zendframework/zendframework": "2.*",
+        "heartsentwined/zf2-phpunit-testcase": "1.*",
         "slm/mail": "~1.4",
         "aws/aws-sdk-php-zf2": "1.2.*",
         "doctrine/doctrine-orm-module": "0.*",
