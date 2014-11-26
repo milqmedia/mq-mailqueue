@@ -32,13 +32,13 @@ class AddToQueueTest extends DoctrineTestcase
 	        
 		} catch(\Exception $e) {}
 		
-    	//$this->setUpSchema();    
+    	$this->setUpSchema();    
     }
 
     public function tearDown()
     {      	      
-	   // if($this->em)
-	    	//$this->em->getConnection()->query('DROP TABLE IF EXISTS test_mailQueue');
+	    if($this->em)
+	    	$this->em->getConnection()->query('DROP TABLE IF EXISTS test_mailQueue');
 	          
         parent::tearDown();
     }
