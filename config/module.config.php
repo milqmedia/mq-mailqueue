@@ -11,7 +11,7 @@ return array(
 		 	'entity' 			=> 'Application\Entity\MailQueue',
 	 	),
 	 	'adapter'				=> 'aws',
-	    'stmp' => array(
+	    'smtp' => array(
 			'name' => '<name>',
 			'host' => '<host>',
 			'port' => 25,

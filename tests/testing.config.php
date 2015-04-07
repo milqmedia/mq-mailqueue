@@ -19,13 +19,28 @@ return array(
 	 	'senderEmail' => 'johan@milq.nl', 
 	 	'numberOfEmailsPerRun' => 250,  
 	 	'database' => array(
-		 	'entity' => 'MQMailQueueTest\Entity\MailQueue',
+		 	'entityManager'		=> 'doctrine.entitymanager.orm_default',
+		 	'entity' 			=> 'Application\Entity\MailQueue',
 	 	),
+	 	'adapter'				=> 'aws',
+	    'smtp' => array(
+			'name' => '<name>',
+			'host' => '<host>',
+			'port' => 25,
+	    ),
     ),
     'aws' => array(
          'key'    				=> '',
          'secret' 				=> '',
          'region' 				=> 'us-east-1'
+    ),
+    'service_manager' => array(
+	    'invokables' => array(
+            'MQMailQueue\Adapter\AdapterManager' => 'MQMailQueue\Adapter\AdapterManager',
+        ),
+        'factories'  => array(
+            'MQMailQueue\Service\Adapter' => 'MQMailQueue\Service\AdapterFactory',
+        ),
     ),
     'doctrine' => array(
 	    'connection' => array(
