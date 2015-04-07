@@ -9,27 +9,30 @@
  * @link        http://milq.nl
  */
  
-namespace MQMailQueue\Service;
+namespace MQMailQueue\Adapter;
 
 use \MQMailQueue\Exception\RuntimeException;
-use Zend\Validator\EmailAddress;
 
-class Adapter
+use Zend\Validator\EmailAddress;
+use Zend\Mail\Transport\Smtp as SmtpTransport;
+use Zend\Mail\Transport\SmtpOptions;
+
+class SMTPAdapter implements AdapterInterface
 {
-	private $serviceManager;
-	private $entityManager;
-	private $config;
+	protected $serviceManager;
 	
-	public function __construct(\Zend\ServiceManager\ServiceManager $serviceManager, \Doctrine\ORM\EntityManager $entityManager) {
+	protected $entityManager;
+	
+	protected $config;
+	
+	public function initialize(array $config, \Zend\ServiceManager\ServiceManager $serviceManager, \Doctrine\ORM\EntityManager $entityManager) {
 		
 		$this->serviceManager = $serviceManager;
 		$this->entityManager = $entityManager;
-		
-		$config = $this->serviceManager->get('application')->getConfig();
-		
-		if(!isset($config['mailqueue']))
-			throw new RuntimeException('No mailqueue config found.');
-			
+
+		if(!isset($config['mailqueue']['smtp']))
+			throw new RuntimeException('No SMTP mailqueue config found.');
+						
 		$this->config = $config['mailqueue'];
 	}
 	
@@ -69,7 +72,15 @@ class Adapter
 	
 	public function sendEmailsFromQueue() {
 		
-		$transport = $this->serviceManager->get('SlmMail\Mail\Transport\SesTransport');
+		$transport = new SmtpTransport();
+		$options   = new SmtpOptions(array(
+			'name' => $this->config['smtp']['name'],
+			'host' => $this->config['smtp']['host'],
+			'port' => $this->config['smtp']['port'],
+		));
+		
+		$transport->setOptions($options);
+		
 		$entity = new $this->config['database']['entity'];
 		$tableName = $this->entityManager->getClassMetadata(get_class($entity))->getTableName();		
 		
