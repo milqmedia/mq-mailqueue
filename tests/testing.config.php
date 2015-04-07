@@ -20,9 +20,8 @@ return array(
 	 	'numberOfEmailsPerRun' => 250,  
 	 	'database' => array(
 		 	'entityManager'		=> 'doctrine.entitymanager.orm_default',
-		 	'entity' 			=> 'Application\Entity\MailQueue',
+		 	'entity' 			=> 'MQMailQueueTest\Entity\MailQueue',
 	 	),
-	 	'adapter'				=> 'aws',
 	    'smtp' => array(
 			'name' => '<name>',
 			'host' => '<host>',
@@ -49,7 +48,7 @@ return array(
 				'params' => array(
 					'host'     => '127.0.0.1',
 					'port'     => '3306',
-					'user'     => 'root',
+					'user'     => 'test',
 					'password' => '',
 					'dbname'   => 'testdb',
 					'charset' => 'utf8',

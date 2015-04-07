@@ -33,6 +33,8 @@ $loader->add('MQMailQueueTest\\', __DIR__);
 
 if (!$config = @include __DIR__ . '/TestConfiguration.php') {
     $config = require __DIR__ . '/TestConfiguration.php.dist';
+    
+    array_push($config['module_listener_options']['config_glob_paths'], __DIR__ . '/testing.smtp.config.php');
 }
 
 return Application::init($config);

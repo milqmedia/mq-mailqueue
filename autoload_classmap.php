@@ -5,7 +5,6 @@ return array(
   'MQMailQueue\Module'                         => __DIR__ . '/Module.php',
   'MQMailQueue\Exception\ExceptionInterface'   => __DIR__ . '/src/MQMailQueue/Exception/ExceptionInterface.php',
   'MQMailQueue\Exception\RuntimeException'     => __DIR__ . '/src/MQMailQueue/Exception/RuntimeException.php',
-  'MQMailQueue\Service\Adapter'                => __DIR__ . '/src/MQMailQueue/Service/Adapter.php',
   'MQMailQueueTest\Entity\MailQueue'           => __DIR__ . '/tests/MQMailQueueTest/Entity/MailQueue.php',
   'MQMailQueueTest\Queue\AddToQueueTest'       => __DIR__ . '/tests/MQMailQueueTest/Queue/QueueTest.php',
   'MQMailQueueTest\Util\ServiceManagerFactory' => __DIR__ . '/tests/MQMailQueueTest/Util/ServiceManagerFactory.php',

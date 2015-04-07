@@ -15,7 +15,7 @@ use Heartsentwined\Phpunit\Testcase\Doctrine as DoctrineTestcase;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 
-class AddToQueueTest extends DoctrineTestcase
+class SMTPQueueTest extends DoctrineTestcase
 {    
 	protected $em, $tool;
 	
@@ -24,7 +24,7 @@ class AddToQueueTest extends DoctrineTestcase
     public function setUp()
     {
         $this
-            ->setBootstrap(__DIR__ . '/../../Bootstrap.php')
+            ->setBootstrap(__DIR__ . '/../../BootstrapSMTP.php')
             ->setEmAlias('doctrine.entitymanager.orm_default');
         	               
         try {
@@ -60,13 +60,14 @@ class AddToQueueTest extends DoctrineTestcase
     
     public function testCanConstructAdapter()
     {
-       	$client = new \MQMailQueue\Service\Adapter($this->sm, $this->em);
-        $this->assertInstanceOf('MQMailQueue\Service\Adapter', $client);
+       	$client = $this->sm->get('MQMailQueue\Service\Adapter');
+
+        $this->assertInstanceOf('MQMailQueue\Adapter\SMTPAdapter', $client);
     }
-    
+
     public function testCanAddMessageToQueue()
     {
-        $client = new \MQMailQueue\Service\Adapter($this->sm, $this->em);
+        $client = $this->sm->get('MQMailQueue\Service\Adapter');
         $entity = $client->queueNewMessage('test name', 'johan@milq.nl', 'test text', '<strong>test html</strong>', 'test title', 1);
         
         $this->assertInstanceOf('MQMailQueueTest\Entity\MailQueue', $entity);
@@ -76,13 +77,13 @@ class AddToQueueTest extends DoctrineTestcase
     {
 	    $this->setExpectedException('\MQMailQueue\Exception\RuntimeException');
 	    
-        $client = new \MQMailQueue\Service\Adapter($this->sm, $this->em);
+        $client = $this->sm->get('MQMailQueue\Service\Adapter');
         $entity = $client->queueNewMessage('test name', 'test', 'test text', '<strong>test html</strong>', 'test title', 1);     
     } 
 	
 	public function testSendEmailsFromQueue()
     {   
-        $client = new \MQMailQueue\Service\Adapter($this->sm, $this->em);
+        $client = $this->sm->get('MQMailQueue\Service\Adapter');
         $entity = $client->sendEmailsFromQueue();     
     } 
 }
