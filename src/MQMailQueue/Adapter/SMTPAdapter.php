@@ -90,7 +90,15 @@ class SMTPAdapter implements AdapterInterface
 	    $queue = $query->getResult();
 	    
 		foreach($queue as $mail) {
-
+			
+			// In development mode we only send emails to predefined email addresses to prevent "strange" unrequested
+			// emails to users.			
+			if($this->config['developmentMode'] == true && !in_array($mail->getRecipientEmail(), $this->config['developmentEmails'])) {
+				
+				$this->entityManager->getConnection()->update($tableName, array('send' => 1, 'sendDate' => date('Y-m-d H:i:s')), array('id' => $mail->getId()));
+				continue;
+			}
+			
 			$message = new \Zend\Mail\Message();			
 			
 			$message->addFrom($mail->getSenderEmail(), $mail->getSenderName())

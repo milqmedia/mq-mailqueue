@@ -77,9 +77,17 @@ class SESAdapter implements AdapterInterface
 	    $query = $this->entityManager->createQuery($dql)
 					        		->setMaxResults($this->config['numberOfEmailsPerRun']);
 	    $queue = $query->getResult();
-	    
-		foreach($queue as $mail) {
 
+		foreach($queue as $mail) {
+			
+			// In development mode we only send emails to predefined email addresses to prevent "strange" unrequested
+			// emails to users.			
+			if($this->config['developmentMode'] == true && !in_array($mail->getRecipientEmail(), $this->config['developmentEmails'])) {
+				
+				$this->entityManager->getConnection()->update($tableName, array('send' => 1), array('id' => $mail->getId()));
+				continue;
+			}
+			
 			$message = new \Zend\Mail\Message();			
 			
 			$message->addFrom($mail->getSenderEmail(), $mail->getSenderName())
