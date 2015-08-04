@@ -60,7 +60,7 @@ class SESAdapter implements AdapterInterface
 	    $entity->setBodyText((string) $text);
 	    
 	    $entity->setScheduleDate((get_class($scheduleDate) !== 'DateTime') ? new \DateTime() : $scheduleDate);
-	    $entity->setScheduleDate($scheduleDate);
+	    $entity->setCreateDate($scheduleDate);
     	  
     	$this->entityManager->persist($entity);    	
    		$this->entityManager->flush();
