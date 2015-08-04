@@ -90,13 +90,19 @@ class MailQueue
     
     /**
      * @var date
-     * @ORM\Column(type="datetime", length=100)
+     * @ORM\Column(type="datetime")
      */
     protected $createDate;
     
     /**
      * @var date
-     * @ORM\Column(type="datetime", length=100, nullable=true)
+     * @ORM\Column(type="datetime")
+     */
+    protected $scheduleDate;
+    
+    /**
+     * @var date
+     * @ORM\Column(type="datetime", nullable=true)
      */
     protected $sendDate;
 

@@ -15,7 +15,7 @@ interface AdapterInterface
 {
 	public function initialize(array $config, \Zend\ServiceManager\ServiceManager $serviceManager, \Doctrine\ORM\EntityManager $entityManager);	
 		
-	public function queueNewMessage($name, $email, $text, $html, $title, $prio = 1);
+	public function queueNewMessage($name, $email, $text, $html, $title, $prio = 1, $scheduleDate = null);
 		
 	public function sendEmailsFromQueue();
 }

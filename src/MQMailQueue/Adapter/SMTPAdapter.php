@@ -36,7 +36,7 @@ class SMTPAdapter implements AdapterInterface
 		$this->config = $config['mailqueue'];
 	}
 	
-	public function queueNewMessage($name, $email, $text, $html, $title, $prio = 1) {
+	public function queueNewMessage($name, $email, $text, $html, $title, $prio = 1, $scheduleDate = null) {
 	
 		if(!isset($this->config['database']['entity']))
 			throw new RuntimeException('No queue entity defined in the configuration.');
@@ -62,6 +62,7 @@ class SMTPAdapter implements AdapterInterface
 	    $entity->setBodyHTML((string) $html);
 	    $entity->setBodyText((string) $text);
 	    
+	    $entity->setScheduleDate((get_class($scheduleDate) !== 'DateTime') ? new \DateTime() : $scheduleDate);
 	    $entity->setCreateDate(new \DateTime());
     	  
     	$this->entityManager->persist($entity);    	
