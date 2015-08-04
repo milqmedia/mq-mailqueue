@@ -85,8 +85,9 @@ class SMTPAdapter implements AdapterInterface
 		$entity = new $this->config['database']['entity'];
 		$tableName = $this->entityManager->getClassMetadata(get_class($entity))->getTableName();		
 		
-	    $dql = 'SELECT m FROM ' . $this->config['database']['entity'] . ' m WHERE m.send = 0 ORDER BY m.prio, m.createDate DESC';
+	    $dql = 'SELECT m FROM ' . $this->config['database']['entity'] . ' m WHERE m.send = 0 AND m.scheduleDate < :now ORDER BY m.prio, m.createDate DESC';
 	    $query = $this->entityManager->createQuery($dql)
+	    							->setParameter('now', date('Y-m-d H:i:s'))
 					        		->setMaxResults($this->config['numberOfEmailsPerRun']);
 	    $queue = $query->getResult();
 	    
