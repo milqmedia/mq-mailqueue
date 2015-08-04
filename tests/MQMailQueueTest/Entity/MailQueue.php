@@ -9,7 +9,7 @@
  * @link        http://milq.nl
  */
 
-namespace Application\Entity;
+namespace MQMailQueueTest\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
