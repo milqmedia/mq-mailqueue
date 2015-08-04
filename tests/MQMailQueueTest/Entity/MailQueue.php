@@ -9,13 +9,13 @@
  * @link        http://milq.nl
  */
 
-namespace MQMailQueueTest\Entity;
+namespace Application\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="test_mailQueue")
+ * @ORM\Table(name="mailQueue")
  *
  */
 class MailQueue
@@ -93,6 +93,12 @@ class MailQueue
      * @ORM\Column(type="datetime", length=100)
      */
     protected $createDate;
+    
+    /**
+     * @var date
+     * @ORM\Column(type="datetime")
+     */
+    protected $scheduleDate;
     
     /**
      * @var date
@@ -384,5 +390,29 @@ class MailQueue
     public function getError()
     {
         return $this->error;
+    }
+
+    /**
+     * Set scheduleDate
+     *
+     * @param \DateTime $scheduleDate
+     *
+     * @return MailQueue
+     */
+    public function setScheduleDate($scheduleDate)
+    {
+        $this->scheduleDate = $scheduleDate;
+
+        return $this;
+    }
+
+    /**
+     * Get scheduleDate
+     *
+     * @return \DateTime
+     */
+    public function getScheduleDate()
+    {
+        return $this->scheduleDate;
     }
 }
