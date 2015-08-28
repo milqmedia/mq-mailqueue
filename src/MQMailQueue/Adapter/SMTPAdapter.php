@@ -80,6 +80,21 @@ class SMTPAdapter implements AdapterInterface
 			'port' => $this->config['smtp']['port'],
 		));
 		
+		/** GMAIL SMTP Test
+		$options = new \Zend\Mail\Transport\SmtpOptions();
+
+		$options->setHost('smtp.gmail.com')
+            ->setConnectionClass('login')
+            ->setName('smtp.gmail.com')
+            ->setPort(587)
+            ->setConnectionConfig(array(
+                               'username' => '<email>',
+                               'password' => '<1password > gmail smtp>',
+                               'ssl' => 'tls',
+                             )
+                  );
+		*/
+		
 		$transport->setOptions($options);
 		
 		$entity = new $this->config['database']['entity'];
