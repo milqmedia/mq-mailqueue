@@ -6,7 +6,6 @@ return array(
 	 	'senderName' 			=> '',
 	 	'senderEmail' 			=> '', 
 	 	'numberOfEmailsPerRun' 	=> 250,  
-	 	'developmentMode'		=> false,
 	 	'developmentEmails'		=> array(),
 	 	'database' => array(
 		 	'entityManager'		=> 'doctrine.entitymanager.orm_default',

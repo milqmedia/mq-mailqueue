@@ -68,7 +68,7 @@ class SESAdapter implements AdapterInterface
     	return $entity;
 	}
 	
-	public function sendEmailsFromQueue() {
+	public function sendEmailsFromQueue($developmentMode = false) {
 		
 		$transport = $this->serviceManager->get('SlmMail\Mail\Transport\SesTransport');
 		$entity = new $this->config['database']['entity'];
@@ -84,7 +84,7 @@ class SESAdapter implements AdapterInterface
 			
 			// In development mode we only send emails to predefined email addresses to prevent "strange" unrequested
 			// emails to users.			
-			if($this->config['developmentMode'] == true && !in_array($mail->getRecipientEmail(), $this->config['developmentEmails'])) {
+			if($developmentMode === true && !in_array($mail->getRecipientEmail(), $this->config['developmentEmails'])) {
 				
 				$this->entityManager->getConnection()->update($tableName, array('send' => 1), array('id' => $mail->getId()));
 				continue;

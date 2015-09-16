@@ -84,6 +84,6 @@ class SESQueueTest extends DoctrineTestcase
 	public function testSendEmailsFromQueue()
     {   
         $client = $this->sm->get('MQMailQueue\Service\Adapter');
-        $entity = $client->sendEmailsFromQueue();     
+        $entity = $client->sendEmailsFromQueue(true);     
     } 
 }

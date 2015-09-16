@@ -71,7 +71,7 @@ class SMTPAdapter implements AdapterInterface
     	return $entity;
 	}
 	
-	public function sendEmailsFromQueue() {
+	public function sendEmailsFromQueue($developmentMode = false) {
 		
 		$transport = new SmtpTransport();
 		$options   = new SmtpOptions(array(
@@ -110,7 +110,7 @@ class SMTPAdapter implements AdapterInterface
 			
 			// In development mode we only send emails to predefined email addresses to prevent "strange" unrequested
 			// emails to users.			
-			if($this->config['developmentMode'] == true && !in_array($mail->getRecipientEmail(), $this->config['developmentEmails'])) {
+			if($developmentMode === true && !in_array($mail->getRecipientEmail(), $this->config['developmentEmails'])) {
 				
 				$this->entityManager->getConnection()->update($tableName, array('send' => 1, 'sendDate' => date('Y-m-d H:i:s')), array('id' => $mail->getId()));
 				continue;
